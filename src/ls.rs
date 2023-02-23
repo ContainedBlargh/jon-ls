@@ -50,17 +50,9 @@ fn main() {
     if glob_path.ends_with(sep) {
         glob_path = format!("{}{}*", glob_path, sep);
     }
-    let mut paths: Vec<PathBuf> = vec![];
-    for path in glob(glob_path.as_str()).unwrap().filter_map(Result::ok) {
-        paths.push(path);
-    }
-    if (paths.is_empty()) {
-        for path in glob(format!("{}{}*", glob_path, sep).as_str())
-            .unwrap()
-            .filter_map(Result::ok)
-        {
-            paths.push(path);
-        }
+    let mut paths: Vec<PathBuf> = glob(glob_path.as_str()).unwrap().filter_map(Result::ok).collect();
+    if paths.is_empty() {
+        paths = glob(format!("{}{}*", glob_path, sep).as_str()).unwrap().filter_map(Result::ok).collect();
     }
 
     if plain {

@@ -157,10 +157,8 @@ macro_rules! output_simple {
         let mut stdout = io::stdout().lock();
         let n = $paths.len();
         for i in 0..n {
-            let has_spaces = $paths[i].contains(' ');
-            let sep = if has_spaces {"'"} else {" "};
             stdout
-                .write_fmt(format_args!("{}{}{}\n", sep, &$paths[i], sep))
+                .write_fmt(format_args!(" {} \n", &$paths[i]))
                 .unwrap();
             stdout.flush().unwrap();        
         }
@@ -171,12 +169,11 @@ macro_rules! output_grid {
     ($paths:expr) => {
         let mut stdout = io::stdout().lock();
         let n = $paths.len();
-        let mut longest = 0;
-        for i in 0..n {
-            if $paths[i].len() > longest {
-                longest = $paths[i].len();
-            }
-        }
+        let longest = $paths.clone()
+            .into_par_iter()
+            .max_by_key(|s|s.len())
+            .unwrap()
+            .len();
         let term_width = get_term_width();
         let per_line = term_width / (longest + 3);
         let mut i = 0;
@@ -208,6 +205,7 @@ pub fn pretty_print(paths: Vec<PathBuf>, config: PrettyConfig, lines: bool) {
         .map(|opt| opt.unwrap())
         .collect();
     if lines {
+        
         output_simple!(pretty_paths);
     } else if pretty_paths.len() > 0 {
         output_grid!(pretty_paths);

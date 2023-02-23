@@ -46,6 +46,7 @@ impl PrettyMatches for PrettySelector {
         meta: &std::fs::Metadata,
     ) -> Option<PrettySelector> {
         return match self {
+            MultipleExtensions(exts) if exts.iter().any(|ext| path_extension_matches(path, ext)) => Some(MultipleExtensions(exts)),
             Extension(ext) if path_extension_matches(path, &ext) => Some(Extension(ext)),
             Symlink if meta.file_type().is_symlink() => Some(self),
             ReadOnly if meta.permissions().readonly() => Some(self),

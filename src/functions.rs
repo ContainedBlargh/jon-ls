@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use rayon::prelude::*;
 use terminal_size::terminal_size;
 use std::io::{self, Write};
 use colored::*;
@@ -155,6 +156,21 @@ macro_rules! output_simple {
     ($paths:expr) => {
         let mut stdout = io::stdout().lock();
         let n = $paths.len();
+        for i in 0..n {
+            let has_spaces = $paths[i].contains(' ');
+            let sep = if has_spaces {"'"} else {" "};
+            stdout
+                .write_fmt(format_args!("{}{}{}\n", sep, &$paths[i], sep))
+                .unwrap();
+            stdout.flush().unwrap();        
+        }
+    };
+}
+
+macro_rules! output_grid {
+    ($paths:expr) => {
+        let mut stdout = io::stdout().lock();
+        let n = $paths.len();
         let mut longest = 0;
         for i in 0..n {
             if $paths[i].len() > longest {
@@ -169,14 +185,12 @@ macro_rules! output_simple {
                 if j + i > n {
                     break;
                 }
-                let has_spaces = $paths[i + j].contains(' ');
-                let sep = if has_spaces {"'"} else {" "};
                 let mut trailing_space = String::from("");
                 for _ in 0..(longest - $paths[i + j].len()) {
                     trailing_space += " ";
                 }
                 stdout
-                    .write_fmt(format_args!("{}{}{}{}", sep, &$paths[i + j], sep, trailing_space))
+                    .write_fmt(format_args!(" {} {}", &$paths[i + j], trailing_space))
                     .unwrap();
             }
             stdout.write_all(b"\n").unwrap();
@@ -186,26 +200,30 @@ macro_rules! output_simple {
     };
 }
 
-pub fn pretty_print_simple(paths: Vec<PathBuf>, config: PrettyConfig) {
+pub fn pretty_print(paths: Vec<PathBuf>, config: PrettyConfig, lines: bool) {
     let pretty_paths: Vec<ColoredString> = paths
-        .into_iter()
+        .into_par_iter()
         .map(|path| prettify_path(&path, &config))
         .filter(|opt| opt.is_some())
         .map(|opt| opt.unwrap())
         .collect();
-    if pretty_paths.len() > 0 {
+    if lines {
         output_simple!(pretty_paths);
+    } else if pretty_paths.len() > 0 {
+        output_grid!(pretty_paths);
     }
 }
 
-pub fn plain_print_simple(paths: Vec<PathBuf>) {
+pub fn plain_print(paths: Vec<PathBuf>, lines: bool) {
     let plain_paths: Vec<String> = paths
         .into_iter()
         .map(|path| plain_path(&path))
         .filter(|opt| opt.is_some())
         .map(|opt| opt.unwrap())
         .collect();
-    if plain_paths.len() > 0 {
+    if lines {
         output_simple!(plain_paths);
+    } else if plain_paths.len() > 0 {
+        output_grid!(plain_paths);
     }
 }

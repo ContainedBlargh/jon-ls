@@ -1,8 +1,9 @@
 [package]
 authors = ["ContainedBlargh <jon@zendata.dk>"]
 edition = "2018"
-name = "pretty-ls"
+name = "jon-ls"
 version = "0.1.0"
+opt-level = 3
 [[bin]]
 name = "jls"
 path = "src/ls.rs"
@@ -12,15 +13,12 @@ path = "src/ls.rs"
 # path = "src/ls-config.rs"
 
 [dependencies]
+rayon = "1.6.1"
 argparse = "0.2.2"
-# cli_select = "0.1.4"
 colored = "2.0.0"
-# dirs = "*"
 glob = "0.3.0"
-indexmap = "*"
-# lazy_static = "1.4.0"
+indexmap = "1.9.2"
 regex = "1.5.5"
-# serde_json = "1.0.79"
 terminal_size = "0.2.5"
 
 # [dependencies.serde]

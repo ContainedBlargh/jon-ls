@@ -2,10 +2,9 @@
 // extern crate serde;
 // extern crate serde_json;
 
-use indexmap::IndexMap;
 // use serde::{Deserialize, Serialize};
 // use serde::{Deserializer, Serializer};
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone /*Deserialize*/)]
 pub enum PrettySelector {
@@ -96,7 +95,7 @@ pub type PrettyConfig = IndexMap<PrettySelector, PrettyEntry>;
 //     path
 // }
 
-use indexmap::indexmap;
+use indexmap::{indexmap, IndexMap};
 
 pub fn standard_config() -> PrettyConfig {
     //Build the standard configuration on the fly...
@@ -128,6 +127,16 @@ pub fn standard_config() -> PrettyConfig {
             PrettyColor::Simple("bright green".to_string()),
             PrettyStyle::Bold
         ), String::from("")),
+        PrettySelector::Extension("db".to_string()) => ((
+            PrettyPos::Foreground,
+            PrettyColor::Simple("bright green".to_string()),
+            PrettyStyle::Bold
+        ), String::from("")),
+        PrettySelector::Extension("exe".to_string()) => ((
+            PrettyPos::Foreground,
+            PrettyColor::Simple("bright green".to_string()),
+            PrettyStyle::Bold
+        ), String::from("")),
         PrettySelector::MultipleExtensions(vec![
             "mp4".to_string(),
             "webm".to_string(),

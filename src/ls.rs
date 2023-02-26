@@ -11,6 +11,8 @@ mod config;
 use argparse::{ArgumentParser, Store, StoreTrue};
 use functions::*;
 use glob::glob;
+use rayon::prelude::ParallelBridge;
+use std::os::windows::prelude::*;
 use std::path::PathBuf;
 
 fn main() {
@@ -50,9 +52,29 @@ fn main() {
     if glob_path.ends_with(sep) {
         glob_path = format!("{}{}*", glob_path, sep);
     }
-    let mut paths: Vec<PathBuf> = glob(glob_path.as_str()).unwrap().filter_map(Result::ok).collect();
+    let mut paths: Vec<PathBuf> = glob(glob_path.as_str())
+        .unwrap()
+        .filter_map(Result::ok)
+        .collect();
     if paths.is_empty() {
-        paths = glob(format!("{}{}*", glob_path, sep).as_str()).unwrap().filter_map(Result::ok).collect();
+        paths = glob(format!("{}{}*", glob_path, sep).as_str())
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|it| {
+                if cfg!(windows) {
+                    it.metadata()
+                        .map(|m| m.file_attributes() & 0x2 > 0)
+                        .unwrap_or(false)
+                        && it
+                            .file_name()
+                            .map(|it| it.to_str().map(|it| !it.starts_with("NTUSER.DAT")))
+                            .flatten()
+                            .unwrap_or(false)
+                } else {
+                    true
+                }
+            })
+            .collect();
     }
 
     if plain {
